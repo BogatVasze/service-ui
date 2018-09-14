@@ -1,0 +1,15 @@
+.labels {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.top-horizontal-bar-chart {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+}
