@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { PropTypes } from 'prop-types';
 import classNames from 'classnames/bind';
-
+import d3 from 'd3';
 import C3Chart from 'react-c3js';
 import styles from './passing.scss';
 import { LaunchInfoBlock } from '../components/testsTableWidget/launchInfoBlock';
@@ -33,7 +33,7 @@ class Passing extends Component {
   };
 
   componentWillMount() {
-    this.chartData = this.getChartData();
+    this.chartData = this.getChartData(this.props.data);
   }
 
   getPercentage = (a, b) => Math.round(a / b * 100);
@@ -48,8 +48,8 @@ class Passing extends Component {
     return [[legends.labels[0], this.passedPercentage], [legends.labels[1], this.failedPercentage]];
   };
 
-  getChartData = () => ({
-    columns: this.getProcessedData(this.props.data),
+  getChartData = (data) => ({
+    columns: this.getProcessedData(data),
     type: this.state.chartType,
     groups: [[legends.labels[0], legends.labels[1]]],
     colors: {
@@ -59,6 +59,27 @@ class Passing extends Component {
     labels: this.state.chartType !== 'bar',
     order: null,
   });
+
+  tooltipPosition = (d, width, height, element) => {
+    const left = d3.mouse(element)[0] - width / 2;
+    const top = d3.mouse(element)[1] - height;
+
+    return {
+      top: top - 8, // 8 - offset for tooltip arrow
+      left,
+    };
+  };
+
+  renderTooltip = (d, defaultTitleFormat, defaultValueFormat, color) => {
+    const id = d[0].id;
+    const ratio = d[0].value / this.chartData.total;
+
+    return `<Tooltip label=${id}><div>${d[0].value} (${this.getPercentage(
+      ratio,
+    )}%)</div><div><span style="background-color: ${
+      color[id]
+    }; width: '12px'; height: '12px';" /> ${d[0].name}</div></Tooltip>`;
+  };
 
   render() {
     return (
@@ -83,7 +104,11 @@ class Passing extends Component {
             axis={{ rotated: true, x: { show: false, padding: 0 }, y: { show: false, padding: 0 } }}
             legend={{ show: false }}
             size={{ height: 200 }}
-            tooltip={{ show: false }}
+            tooltip={{
+              grouped: false,
+              position: this.tooltipPosition,
+              contents: this.renderTooltip,
+            }}
           />
         </section>
       </div>
